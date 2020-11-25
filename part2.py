@@ -1,27 +1,47 @@
 from tqdm import tqdm
 import itertools
-import copy
 
-tag_seq_ls = []
-word_seq_ls = []
+
+def load_dataset(language):
+    tag_seq_ls = []
+    word_seq_ls = []
+    test_word_seq = []
+
+    path_train = f'{language}/train'
+    path_test = f'{language}/dev.in'
+
+    with open(path_train, "r") as f:
+        document = f.read().rstrip()
+        sentences = document.split("\n\n")
+
+        for sentence in tqdm(sentences):
+            word_seq = []
+            tag_seq = []
+            for word_tag in sentence.split("\n"):
+                word, tag = word_tag.split(" ")
+                tag_seq.append(tag)
+                word_seq.append(word)
+
+            tag_seq_ls.append(tag_seq)
+            word_seq_ls.append(word_seq)
+
+    with open(path_test, "r") as f:
+        document = f.read().rstrip()
+        sentences = document.split("\n\n")
+
+        for sentence in tqdm(sentences):
+            word_seq = []
+            for word in sentence.split("\n"):
+                word_seq.append(word)
+            test_word_seq.append(word_seq)
+
+    return tag_seq_ls, word_seq_ls, test_word_seq
+
+
+tag_seq_ls, word_seq_ls, test_word_seq = load_dataset("SG")
 
 tags_unique = []
 words_unique = []
-
-with open("SG(1)/train", "r") as f:
-    document = f.read().rstrip()
-    sentences = document.split("\n\n")
-
-    for sentence in tqdm(sentences):
-        word_seq = []
-        tag_seq = []
-        for word_tag in sentence.split("\n"):
-            word, tag = word_tag.split(" ")
-            tag_seq.append(tag)
-            word_seq.append(word)
-
-        tag_seq_ls.append(tag_seq)
-        word_seq_ls.append(word_seq)
 
 
 def get_unique_elements(nested_list):
@@ -63,19 +83,13 @@ def calculate_b(u, o, emission_pairs, tag_seq_ls):
     return numerator / denominator
 
 
-# emission_table = []
-# for pair in tqdm(emission_pairs_possible):
-#     b = calculate_b(pair[0], pair[1], emission_pairs, tag_seq_ls)
-#     emission_table.append([pair, b])
+def count_y(tag, tag_seq_ls):
+    tag_seq_ls_flattened = list(itertools.chain.from_iterable(tag_seq_ls))
+    return tag_seq_ls_flattened.count(tag)
 
 
-def flatten(sequences):
-    """
-    Flatten a nested sequence
-    """
-    return itertools.chain.from_iterable(sequences)
-
-
+"""
+# part 1
 emission_matrix = {}
 for tag in tags_unique:
     emission_matrix_row = {}
@@ -87,17 +101,12 @@ for tags, words in zip(tag_seq_ls, word_seq_ls):
     for tag, word in zip(tags, words):
         emission_matrix[tag][word] += 1
 
-
-def count_y(tag, tag_seq_ls):
-    tag_seq_ls_flattened = list(itertools.chain.from_iterable(tag_seq_ls))
-    return tag_seq_ls_flattened.count(tag)
-
-
 for emission_matrix_row_key, emission_matrix_row in emission_matrix.items():
     row_sum = sum(emission_matrix_row.values())
     count_y(emission_matrix_row_key, tag_seq_ls)
     for word, cell in emission_matrix_row.items():
         emission_matrix[emission_matrix_row_key][word] = cell / row_sum
+"""
 
 k = .5
 emission_matrix_2 = {}
@@ -124,25 +133,45 @@ for emission_matrix_2_row_key, emission_matrix_2_row in emission_matrix_2.items(
     # word == #UNK#
     emission_matrix_2[emission_matrix_2_row_key]["#UNK#"] = k / (row_sum + k)
 
-test_word_seq = []
-
-with open("SG(1)/dev.in", "r") as f:
-    document = f.read().rstrip()
-    sentences = document.split("\n\n")
-
-    for sentence in tqdm(sentences):
-        word_seq = []
-        for word in sentence.split("\n"):
-            word_seq.append(word)
-        test_word_seq.append(word_seq)
-
 test_word_unique = get_unique_elements(test_word_seq)
 
 unseen_words = set(test_word_unique).difference(set(words_unique))
 
-for i, test_word in enumerate(test_word_seq):
-    for j, word in enumerate(test_word):
-        if word in unseen_words:
-            test_word_seq[i][j] = "#UNK#"
+
+def get_best_tag(word, emission_matrix):
+    y = ""
+    score_max = -1
+
+    for tag, emission_matrix_row in emission_matrix.items():
+        score_current = emission_matrix_row[word]
+
+        if score_current > score_max:
+            score_max = score_current
+            y = tag
+
+    return y
+
+
+def get_prediction(test_word_seq, emission_matrix):
+    output = ""
+    for test_word in test_word_seq:
+        for word in test_word:
+            best_tag = ""
+            if word in unseen_words:
+                best_tag = get_best_tag("#UNK#", emission_matrix)
+            else:
+                best_tag = get_best_tag(word, emission_matrix)
+
+            output += f"{word} {best_tag}"
+            output += "\n"
+        output += "\n"
+
+    return output
+
+
+prediction = get_prediction(test_word_seq, emission_matrix_2)
+
+with open("SG/dev.p2.out", "w") as f:
+    f.write(prediction)
 
 print()
