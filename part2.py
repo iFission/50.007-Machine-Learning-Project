@@ -51,6 +51,7 @@ def get_unique_elements(nested_list):
 tags_unique = get_unique_elements(tag_seq_ls)
 tags_unique.sort()
 words_unique = get_unique_elements(word_seq_ls)
+words_unique.sort()
 tags_unique_with_start_stop = ["START"] + tags_unique + ["STOP"]
 
 
@@ -58,7 +59,7 @@ def generate_emission_pairs(tag_seq_ls, word_seq_ls):
     emission_pairs = []
 
     for state_seq, obser_seq in zip(tag_seq_ls, word_seq_ls):
-        for state, obser in zip(state_seq[1:-1], obser_seq):
+        for state, obser in zip(state_seq, obser_seq):
             emission_pairs.append([state, obser])
 
     return emission_pairs
@@ -74,13 +75,6 @@ def generate_possible_emission_pairs(tags_unique, words_unique):
 
 emission_pairs_possible = generate_possible_emission_pairs(
     tags_unique, words_unique)
-
-
-def calculate_b(u, o, emission_pairs, tag_seq_ls):
-    numerator = emission_pairs.count([u, o])
-    denominator = sum([pair.count(u) for pair in tag_seq_ls])
-
-    return numerator / denominator
 
 
 def count_y(tag, tag_seq_ls):
@@ -101,37 +95,40 @@ for tags, words in zip(tag_seq_ls, word_seq_ls):
     for tag, word in zip(tags, words):
         emission_matrix[tag][word] += 1
 
-for emission_matrix_row_key, emission_matrix_row in emission_matrix.items():
+for tag, emission_matrix_row in emission_matrix.items():
     row_sum = sum(emission_matrix_row.values())
-    count_y(emission_matrix_row_key, tag_seq_ls)
+    count_y(tag, tag_seq_ls)
     for word, cell in emission_matrix_row.items():
-        emission_matrix[emission_matrix_row_key][word] = cell / row_sum
+        emission_matrix[tag][word] = cell / row_sum
 """
 
 k = .5
-emission_matrix_2 = {}
-for tag in tags_unique:
-    emission_matrix_2_row = {}
-    for word in words_unique:
-        emission_matrix_2_row[word] = 0.0
-    emission_matrix_2_row["#UNK#"] = 0.0
-    emission_matrix_2[tag] = emission_matrix_2_row
 
+# create and initialise emission matrix
+emission_matrix = {}
+for tag in tags_unique:
+    emission_matrix_row = {}
+    for word in words_unique:
+        emission_matrix_row[word] = 0.0
+    emission_matrix_row["#UNK#"] = 0.0
+    emission_matrix[tag] = emission_matrix_row
+
+# population emission matrix with counts
 for tags, words in zip(tag_seq_ls, word_seq_ls):
     for tag, word in zip(tags, words):
-        emission_matrix_2[tag][word] += 1
+        emission_matrix[tag][word] += 1
 
-for emission_matrix_2_row_key, emission_matrix_2_row in emission_matrix_2.items(
-):
-    row_sum = count_y(emission_matrix_2_row_key, tag_seq_ls) + k
+# divide cells by sum, to get probability
+for tag, emission_matrix_row in emission_matrix.items():
+    row_sum = count_y(tag, tag_seq_ls) + k
 
     # words in training set
-    emission_matrix_2_row.popitem()
-    for word, cell in emission_matrix_2_row.items():
-        emission_matrix_2[emission_matrix_2_row_key][word] = cell / row_sum
+    popped = emission_matrix_row.popitem()
+    for word, cell in emission_matrix_row.items():
+        emission_matrix[tag][word] = cell / row_sum
 
     # word == #UNK#
-    emission_matrix_2[emission_matrix_2_row_key]["#UNK#"] = k / (row_sum + k)
+    emission_matrix[tag]["#UNK#"] = k / (row_sum)
 
 test_word_unique = get_unique_elements(test_word_seq)
 
@@ -148,6 +145,8 @@ def get_best_tag(word, emission_matrix):
         if score_current > score_max:
             score_max = score_current
             y = tag
+
+        print(tag, score_current)
 
     return y
 
@@ -169,7 +168,7 @@ def get_prediction(test_word_seq, emission_matrix):
     return output
 
 
-prediction = get_prediction(test_word_seq, emission_matrix_2)
+prediction = get_prediction(test_word_seq, emission_matrix)
 
 with open("SG/dev.p2.out", "w") as f:
     f.write(prediction)
