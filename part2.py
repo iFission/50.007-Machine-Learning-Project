@@ -1,6 +1,8 @@
 from tqdm import tqdm
 import itertools
 
+language = "CN"
+
 
 def load_dataset(language):
     tag_seq_ls = []
@@ -38,7 +40,7 @@ def load_dataset(language):
     return tag_seq_ls, word_seq_ls, test_word_seq
 
 
-tag_seq_ls, word_seq_ls, test_word_seq = load_dataset("SG")
+tag_seq_ls, word_seq_ls, test_word_seq = load_dataset(language)
 
 tags_unique = []
 words_unique = []
@@ -146,8 +148,6 @@ def get_best_tag(word, emission_matrix):
             score_max = score_current
             y = tag
 
-        print(tag, score_current)
-
     return y
 
 
@@ -170,7 +170,12 @@ def get_prediction(test_word_seq, emission_matrix):
 
 prediction = get_prediction(test_word_seq, emission_matrix)
 
-with open("SG/dev.p2.out", "w") as f:
-    f.write(prediction)
+
+def save_prediction(language, prediction):
+    with open(f"{language}/dev.p2.out", "w") as f:
+        f.write(prediction)
+
+
+save_prediction(language, prediction)
 
 print()
