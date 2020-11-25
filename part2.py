@@ -87,11 +87,62 @@ for tags, words in zip(tag_seq_ls, word_seq_ls):
     for tag, word in zip(tags, words):
         emission_matrix[tag][word] += 1
 
-for emission_matrix_row_keys, emission_matrix_row in emission_matrix.items():
-    row_sum = sum(emission_matrix_row.values())
-    for word, cell in emission_matrix_row.items():
-        emission_matrix[emission_matrix_row_keys][word] = cell / row_sum
 
-#
+def count_y(tag, tag_seq_ls):
+    tag_seq_ls_flattened = list(itertools.chain.from_iterable(tag_seq_ls))
+    return tag_seq_ls_flattened.count(tag)
+
+
+for emission_matrix_row_key, emission_matrix_row in emission_matrix.items():
+    row_sum = sum(emission_matrix_row.values())
+    count_y(emission_matrix_row_key, tag_seq_ls)
+    for word, cell in emission_matrix_row.items():
+        emission_matrix[emission_matrix_row_key][word] = cell / row_sum
+
+k = .5
+emission_matrix_2 = {}
+for tag in tags_unique:
+    emission_matrix_2_row = {}
+    for word in words_unique:
+        emission_matrix_2_row[word] = 0.0
+    emission_matrix_2_row["#UNK#"] = 0.0
+    emission_matrix_2[tag] = emission_matrix_2_row
+
+for tags, words in zip(tag_seq_ls, word_seq_ls):
+    for tag, word in zip(tags, words):
+        emission_matrix_2[tag][word] += 1
+
+for emission_matrix_2_row_key, emission_matrix_2_row in emission_matrix_2.items(
+):
+    row_sum = count_y(emission_matrix_2_row_key, tag_seq_ls) + k
+
+    # words in training set
+    emission_matrix_2_row.popitem()
+    for word, cell in emission_matrix_2_row.items():
+        emission_matrix_2[emission_matrix_2_row_key][word] = cell / row_sum
+
+    # word == #UNK#
+    emission_matrix_2[emission_matrix_2_row_key]["#UNK#"] = k / (row_sum + k)
+
+test_word_seq = []
+
+with open("SG(1)/dev.in", "r") as f:
+    document = f.read().rstrip()
+    sentences = document.split("\n\n")
+
+    for sentence in tqdm(sentences):
+        word_seq = []
+        for word in sentence.split("\n"):
+            word_seq.append(word)
+        test_word_seq.append(word_seq)
+
+test_word_unique = get_unique_elements(test_word_seq)
+
+unseen_words = set(test_word_unique).difference(set(words_unique))
+
+for i, test_word in enumerate(test_word_seq):
+    for j, word in enumerate(test_word):
+        if word in unseen_words:
+            test_word_seq[i][j] = "#UNK#"
 
 print()
