@@ -198,7 +198,11 @@ def get_prediction_viterbi(test_word_seq_ls, emission_matrix,
         viterbi.step_two()
         viterbi.final_step()
         best_y = viterbi.recover_y_seq()
-        output += "\n".join(best_y)
+
+        for word, y in zip(test_word_seq, best_y):
+            output += f"{word} {y}"
+            output += "\n"
+
         output += "\n"
 
     return output
@@ -280,8 +284,6 @@ class Viterbi:
                 y_n_score_max = score
                 y_n_star = u
 
-            print()
-
         y_seq.insert(0, y_n_star)
 
         for j in range(self.n - 1, 0, -1):
@@ -289,7 +291,7 @@ class Viterbi:
             y_j_score_max = -1
             for u in self.tags_unique_with_start_stop[1:-1]:
                 score = self.pi[j][u] * self.transition_matrix[u][y_seq[0]]
-                if score > y_n_score_max:
+                if score > y_j_score_max:
                     y_j_score_max = score
                     y_j_star = u
 
@@ -356,7 +358,5 @@ for language in languages:
                                         tags_unique_with_start_stop)
 
     save_prediction("p3", language, prediction)
-
-    print()
 
     print()
