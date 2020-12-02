@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import itertools
 
-languages = ["CN", "SG", "EN"]
+languages = ["SG", "EN", "CN"]
 
 
 def load_dataset(language):
@@ -172,8 +172,8 @@ def get_best_tag(word, emission_matrix):
 
 def get_prediction(test_word_seq_ls, emission_matrix):
     output = ""
-    for test_word in test_word_seq_ls:
-        for word in test_word:
+    for test_word_seq in test_word_seq_ls:
+        for word in test_word_seq:
             best_tag = ""
             if word in unseen_words:
                 best_tag = get_best_tag("#UNK#", emission_matrix)
@@ -187,13 +187,119 @@ def get_prediction(test_word_seq_ls, emission_matrix):
     return output
 
 
-def save_prediction(language, prediction):
-    with open(f"{language}/dev.p2.out", "w") as f:
+def get_prediction_viterbi(test_word_seq_ls, emission_matrix,
+                           transition_matrix, tags_unique_with_start_stop):
+    output = ""
+    for test_word_seq in test_word_seq_ls:
+        viterbi = Viterbi(test_word_seq, emission_matrix, transition_matrix,
+                          tags_unique_with_start_stop)
+
+        viterbi.initialise()
+        viterbi.step_two()
+        viterbi.final_step()
+        best_y = viterbi.recover_y_seq()
+        output += "\n".join(best_y)
+        output += "\n"
+
+    return output
+
+
+def save_prediction(exp, language, prediction):
+    with open(f"{language}/dev.{exp}.out", "w") as f:
         f.write(prediction)
 
 
+class Viterbi:
+    def __init__(self, test_word_seq, emission_matrix, transition_matrix,
+                 tags_unique_with_start_stop) -> None:
+        self.pi = {}
+        self.n = len(test_word_seq)  # number of words in word_seq
+        self.test_word_seq = test_word_seq  # x
+        self.emission_matrix = emission_matrix
+        self.transition_matrix = transition_matrix
+        self.tags_unique_with_start_stop = tags_unique_with_start_stop
+
+    def initialise(self):
+        self.test_word_seq = ["START"] + self.test_word_seq + ["STOP"]
+
+        for j in range(self.n + 2):
+            pi_row = {}
+            for tag in self.tags_unique_with_start_stop:
+                pi_row[tag] = -1.0
+
+            self.pi[j] = pi_row
+
+        # initialise pi(0, u) 1 for START, 0 otherwise
+        for u in self.tags_unique_with_start_stop:
+            if u == "START":
+                self.pi[0][u] = 1
+            else:
+                self.pi[0][u] = 0
+
+    def step_two(self):
+        for j in range(0, self.n):
+            for u in self.tags_unique_with_start_stop:
+                score_max = -1
+
+                for v in self.tags_unique_with_start_stop:
+                    test_word = self.test_word_seq[j + 1]
+                    if test_word not in self.emission_matrix["START"].keys():
+                        test_word = "#UNK#"
+                    try:
+                        score = self.pi[j][v] * self.emission_matrix[u][
+                            test_word] * self.transition_matrix[v][u]
+                    except KeyError:
+                        score = 0
+
+                    if score > score_max:
+                        score_max = score
+
+                self.pi[j + 1][u] = score_max
+
+    def final_step(self):
+        score_max = -1
+
+        for v in self.tags_unique_with_start_stop[:-1]:
+            score = self.pi[self.n][v] * self.transition_matrix[v]["STOP"]
+
+            if score > score_max:
+                score_max = score
+
+        self.pi[self.n + 1]["STOP"] = score_max
+
+    def recover_y_seq(self):
+
+        y_seq = []
+
+        y_n_star = ""
+
+        y_n_score_max = -1
+        for u in self.tags_unique_with_start_stop[1:-1]:
+            score = self.pi[self.n][u] * self.transition_matrix[u]["STOP"]
+            if score > y_n_score_max:
+                y_n_score_max = score
+                y_n_star = u
+
+            print()
+
+        y_seq.insert(0, y_n_star)
+
+        for j in range(self.n - 1, 0, -1):
+            y_j_star = ""
+            y_j_score_max = -1
+            for u in self.tags_unique_with_start_stop[1:-1]:
+                score = self.pi[j][u] * self.transition_matrix[u][y_seq[0]]
+                if score > y_n_score_max:
+                    y_j_score_max = score
+                    y_j_star = u
+
+            y_seq.insert(0, y_j_star)
+
+        return y_seq
+
+
 """
-# part 1
+# part 1, without UNK
 emission_matrix = {}
 for tag in tags_unique:
     emission_matrix_row = {}
@@ -244,8 +350,13 @@ for language in languages:
 
     unseen_words = set(test_word_unique).difference(set(words_unique))
 
-    prediction = get_prediction(test_word_seq_ls, emission_matrix)
+    # prediction = get_prediction(test_word_seq_ls, emission_matrix)
+    prediction = get_prediction_viterbi(test_word_seq_ls, emission_matrix,
+                                        transition_matrix,
+                                        tags_unique_with_start_stop)
 
-    save_prediction(language, prediction)
+    save_prediction("p3", language, prediction)
+
+    print()
 
     print()
