@@ -1,13 +1,13 @@
 ## SG
 
 ```bash
-/usr/local/bin/python3 "/Volumes/GoogleDrive/My Drive/50.007 - Machine Learning Project/part2.py"
+/usr/local/bin/python3 "hmm_part2.py"
 100%|█| 18559/18559 [00:00<00:00, 1439
 100%|█| 2650/2650 [00:00<00:00, 391259
 ```
 
 ```bash
-/usr/local/bin/python3 "/Volumes/GoogleDrive/My Drive/50.007 - Machine Learning Project/EvalScript/evalResult.py" /Volumes/GoogleDrive/My\ Drive/50.007\ -\ Machine\ Learning\ Project/SG/dev.out /Volumes/GoogleDrive/My\ Drive/50.007\ -\ Machine\ Learning\ Project/SG/dev.p2.out
+/usr/local/bin/python3 "EvalScript/evalResult.py" SG/dev.out SG/dev.p2.out
 
 #Entity in gold data: 4301
 Entity in prediction: 12237
@@ -26,13 +26,13 @@ Sentiment  F: 0.1851
 ## EN
 
 ```bash
-/usr/local/bin/python3 "/Volumes/GoogleDrive/My Drive/50.007 - Machine Learning Project/part2.py"
+/usr/local/bin/python3 "hmm_part2.py"
 100%|█| 7663/7663 [00:00<00:00, 76288.
 100%|█| 1094/1094 [00:00<00:00, 226271
 ```
 
 ```bash
-/usr/local/bin/python3 "/Volumes/GoogleDrive/My Drive/50.007 - Machine Learning Project/EvalScript/evalResult.py" /Volumes/GoogleDrive/My\ Drive/50.007\ -\ Machine\ Learning\ Project/EN/dev.out /Volumes/GoogleDrive/My\ Drive/50.007\ -\ Machine\ Learning\ Project/EN/dev.p2.out
+/usr/local/bin/python3 "EvalScript/evalResult.py" EN/dev.out EN/dev.p2.out
 
 #Entity in gold data: 13179
 #Entity in prediction: 18650
@@ -50,13 +50,13 @@ Sentiment  F: 0.5313
 ## CN
 
 ```bash
-/usr/local/bin/python3 "/Volumes/GoogleDrive/My Drive/50.007 - Machine Learning Project/part2.py"
+/usr/local/bin/python3 "hmm_part2.py"
 100%|█| 2410/2410 [00:00<00:00, 55432.
 100%|█| 344/344 [00:00<00:00, 108476.1
 ```
 
 ```bash
-/usr/local/bin/python3 "/Volumes/GoogleDrive/My Drive/50.007 - Machine Learning Project/EvalScript/evalResult.py" /Volumes/GoogleDrive/My\ Drive/50.007\ -\ Machine\ Learning\ Project/CN/dev.out /Volumes/GoogleDrive/My\ Drive/50.007\ -\ Machine\ Learning\ Project/CN/dev.p2.out
+/usr/local/bin/python3 "EvalScript/evalResult.py" CN/dev.out CN/dev.p2.out
 
 #Entity in gold data: 700
 #Entity in prediction: 4248
