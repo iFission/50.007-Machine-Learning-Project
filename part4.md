@@ -9,17 +9,17 @@
 /usr/local/bin/python3 "EvalScript/evalResult.py" SG/dev.out SG/dev.p4.out
 
 #Entity in gold data: 4301
-#Entity in prediction: 34191
+#Entity in prediction: 13063
 
-#Correct Entity : 2308
-Entity  precision: 0.0675
-Entity  recall: 0.5366
-Entity  F: 0.1199
+#Correct Entity : 1450
+Entity  precision: 0.1110
+Entity  recall: 0.3371
+Entity  F: 0.1670
 
-#Correct Sentiment : 123
-Sentiment  precision: 0.0036
-Sentiment  recall: 0.0286
-Sentiment  F: 0.0064
+#Correct Sentiment : 833
+Sentiment  precision: 0.0638
+Sentiment  recall: 0.1937
+Sentiment  F: 0.0959
 ```
 
 
@@ -34,17 +34,17 @@ Sentiment  F: 0.0064
 /usr/local/bin/python3 "EvalScript/evalResult.py" EN/dev.out EN/dev.p4.out
 
 #Entity in gold data: 13179
-#Entity in prediction: 26131
+#Entity in prediction: 14264
 
-#Correct Entity : 7310
-Entity  precision: 0.2797
-Entity  recall: 0.5547
-Entity  F: 0.3719
+#Correct Entity : 4854
+Entity  precision: 0.3403
+Entity  recall: 0.3683
+Entity  F: 0.3538
 
-#Correct Sentiment : 175
-Sentiment  precision: 0.0067
-Sentiment  recall: 0.0133
-Sentiment  F: 0.0089
+#Correct Sentiment : 3194
+Sentiment  precision: 0.2239
+Sentiment  recall: 0.2424
+Sentiment  F: 0.2328
 ```
 ## CN
 
@@ -57,15 +57,15 @@ Sentiment  F: 0.0089
 /usr/local/bin/python3 "EvalScript/evalResult.py" CN/dev.out CN/dev.p4.out
 
 #Entity in gold data: 700
-#Entity in prediction: 13060
+#Entity in prediction: 5119
 
-#Correct Entity : 347
-Entity  precision: 0.0266
-Entity  recall: 0.4957
-Entity  F: 0.0504
+#Correct Entity : 187
+Entity  precision: 0.0365
+Entity  recall: 0.2671
+Entity  F: 0.0643
 
-#Correct Sentiment : 15
-Sentiment  precision: 0.0011
-Sentiment  recall: 0.0214
-Sentiment  F: 0.0022
+#Correct Sentiment : 66
+Sentiment  precision: 0.0129
+Sentiment  recall: 0.0943
+Sentiment  F: 0.0227
 ```

@@ -1,7 +1,12 @@
 from tqdm import tqdm
 import itertools
+import collections
 
 languages = ["SG", "EN", "CN"]
+
+
+def filter_top_3_dict(dict_in):
+    return collections.OrderedDict(sorted(dict_in.items(), reverse=True)[:3])
 
 
 def load_dataset(language):
@@ -243,7 +248,7 @@ class Viterbi:
     def step_two(self):
         for j in range(0, self.n):
             for u in self.tags_unique_with_start_stop:
-                score_ls = []
+                score_max = -1
 
                 for v in self.tags_unique_with_start_stop:
                     test_word = self.test_word_seq[j + 1]
@@ -255,11 +260,10 @@ class Viterbi:
                     except KeyError:
                         score = 0
 
-                    score_ls.append(score)
+                    if score > score_max:
+                        score_max = score
 
-                score_ls.sort()
-                score_third_best = score_ls[-3]
-                self.pi[j + 1][u] = score_third_best
+                self.pi[j + 1][u] = score_max
 
     def final_step(self):
         score_max = -1
@@ -274,29 +278,26 @@ class Viterbi:
 
     def recover_y_seq(self):
 
+        y_seq_top_3 = {}
+
         y_seq = []
 
-        y_n_star = ""
-
-        y_n_score_max = -1
         for u in self.tags_unique_with_start_stop[1:-1]:
             score = self.pi[self.n][u] * self.transition_matrix[u]["STOP"]
-            if score > y_n_score_max:
-                y_n_score_max = score
-                y_n_star = u
+            y_seq_top_3[score] = [u]
 
-        y_seq.insert(0, y_n_star)
+        y_seq_top_3 = filter_top_3_dict(y_seq_top_3)
 
         for j in range(self.n - 1, 0, -1):
-            y_j_star = ""
-            y_j_score_max = -1
-            for u in self.tags_unique_with_start_stop[1:-1]:
-                score = self.pi[j][u] * self.transition_matrix[u][y_seq[0]]
-                if score > y_j_score_max:
-                    y_j_score_max = score
-                    y_j_star = u
+            y_seq_top_3_intermediate = {}
+            for y_seq in y_seq_top_3.values():
+                for u in self.tags_unique_with_start_stop[1:-1]:
+                    score = self.pi[j][u] * self.transition_matrix[u][y_seq[0]]
+                    y_seq_top_3_intermediate[score] = [u] + y_seq
 
-            y_seq.insert(0, y_j_star)
+            y_seq_top_3 = filter_top_3_dict(y_seq_top_3_intermediate)
+
+        y_seq = list(y_seq_top_3.values())[-1]
 
         return y_seq
 
