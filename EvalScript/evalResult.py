@@ -4,8 +4,10 @@ from copy import copy
 from collections import defaultdict
 from optparse import OptionParser
 
+
 #Read entities from predcition
-def get_predicted(predicted, answers=defaultdict(lambda: defaultdict(defaultdict))):
+def get_predicted(predicted,
+                  answers=defaultdict(lambda: defaultdict(defaultdict))):
 
     example = 0
     word_index = 0
@@ -36,16 +38,16 @@ def get_predicted(predicted, answers=defaultdict(lambda: defaultdict(defaultdict
             ne = value[0]
             sent = value[2:]
 
-
             last_entity = []
 
             #check if it is start of entity
-            if ne == 'B' or (ne == 'I' and last_ne == 'O') or (last_ne != 'O' and ne == 'I' and last_sent != sent):
+            if ne == 'B' or (ne == 'I' and last_ne == 'O') or (
+                    last_ne != 'O' and ne == 'I' and last_sent != sent):
                 if entity:
                     last_entity = list(entity)
 
                 entity = [sent]
-                    
+
                 entity.append(word_index)
 
             elif ne == 'I':
@@ -53,9 +55,8 @@ def get_predicted(predicted, answers=defaultdict(lambda: defaultdict(defaultdict
 
             elif ne == 'O':
                 if last_ne == 'B' or last_ne == 'I':
-                    last_entity =list(entity)
+                    last_entity = list(entity)
                 entity = []
-
 
             if last_entity:
                 answers[example].append(list(last_entity))
@@ -68,14 +69,12 @@ def get_predicted(predicted, answers=defaultdict(lambda: defaultdict(defaultdict
     if entity:
         answers[example].append(list(entity))
 
-
+    print(answers)
     return answers
-
 
 
 #Read entities from gold data
 def get_observed(observed):
-
 
     example = 0
     word_index = 0
@@ -84,7 +83,7 @@ def get_observed(observed):
     last_sent = ""
     last_entity = []
 
-    observations=defaultdict(defaultdict)
+    observations = defaultdict(defaultdict)
     observations[example] = []
 
     for line in observed:
@@ -109,16 +108,16 @@ def get_observed(observed):
             ne = value[0]
             sent = value[2:]
 
-
             last_entity = []
 
             #check if it is start of entity, suppose there is no weird case in gold data
-            if ne == 'B' or (ne == 'I' and last_ne == 'O') or (last_ne != 'O' and ne == 'I' and last_sent != sent):
+            if ne == 'B' or (ne == 'I' and last_ne == 'O') or (
+                    last_ne != 'O' and ne == 'I' and last_sent != sent):
                 if entity:
                     last_entity = entity
 
                 entity = [sent]
-                    
+
                 entity.append(word_index)
 
             elif ne == 'I':
@@ -129,11 +128,9 @@ def get_observed(observed):
                     last_entity = entity
                 entity = []
 
-
             if last_entity:
                 observations[example].append(list(last_entity))
                 last_entity = []
-
 
         last_ne = ne
         last_sent = sent
@@ -141,19 +138,21 @@ def get_observed(observed):
 
     if entity:
         observations[example].append(list(entity))
-
+    print(observations)
     return observations
+
 
 #Print Results and deal with division by 0
 def printResult(evalTarget, num_correct, prec, rec):
-    if abs(prec + rec ) < 1e-6:
+    if abs(prec + rec) < 1e-6:
         f = 0
     else:
         f = 2 * prec * rec / (prec + rec)
     print('#Correct', evalTarget, ':', num_correct)
     print(evalTarget, ' precision: %.4f' % (prec))
-    print(evalTarget, ' recall: %.4f' %   (rec))
+    print(evalTarget, ' recall: %.4f' % (rec))
     print(evalTarget, ' F: %.4f' % (f))
+
 
 #Compare results bewteen gold data and prediction data
 def compare_observed_to_predicted(observed, predicted):
@@ -191,7 +190,6 @@ def compare_observed_to_predicted(observed, predicted):
                 #Entity matched
                 if span_ne == ne:
                     correct_entity += 1
-                    
 
                     #Entity & Sentiment both are matched
                     if span_sent == sent:
@@ -202,24 +200,22 @@ def compare_observed_to_predicted(observed, predicted):
     print('#Entity in prediction: %d' % (total_predicted))
     print()
 
-    prec = correct_entity/total_predicted
-    rec = correct_entity/total_observed
+    prec = correct_entity / total_predicted
+    rec = correct_entity / total_observed
     printResult('Entity', correct_entity, prec, rec)
     print()
 
-    prec = correct_sentiment/total_predicted
-    rec = correct_sentiment/total_observed
-    printResult('Sentiment',correct_sentiment, prec, rec)
-
-
+    prec = correct_sentiment / total_predicted
+    rec = correct_sentiment / total_observed
+    printResult('Sentiment', correct_sentiment, prec, rec)
 
 
 ##############Main Function##################
 
 if len(sys.argv) < 3:
-    print ('Please make sure you have installed Python 3.4 or above!')
-    print ("Usage on Windows:  python evalResult.py gold predictions")
-    print ("Usage on Linux/Mac:  python3 evalResult.py gold predictions")
+    print('Please make sure you have installed Python 3.4 or above!')
+    print("Usage on Windows:  python evalResult.py gold predictions")
+    print("Usage on Linux/Mac:  python3 evalResult.py gold predictions")
     sys.exit()
 
 gold = open(sys.argv[1], "r", encoding='UTF-8')
@@ -238,4 +234,3 @@ predicted = get_predicted(prediction)
 
 #Compare
 compare_observed_to_predicted(observed, predicted)
-
