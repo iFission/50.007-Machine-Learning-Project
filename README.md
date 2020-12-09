@@ -1,4 +1,4 @@
-first, install requirements in requirements.txt via
+1. Install requirements in requirements.txt:
 ```
 pip3 install -r requirements.txt
 ```
@@ -9,7 +9,7 @@ pipenv install
 ```
 
 
-run each part of the script by:
+2. Run each part of the script by:
 ```
 /usr/local/bin/python3 "hmm_part2.py"
 /usr/local/bin/python3 "hmm_part3.py"
