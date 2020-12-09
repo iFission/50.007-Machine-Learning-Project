@@ -259,7 +259,7 @@ def get_prediction_viterbi(test_word_seq_ls, emission_matrix,
 
 
 def save_prediction(exp, language, prediction):
-    with open(f"{language}/dev.{exp}.out", "w") as f:
+    with open(f"{language}/test.{exp}.out", "w") as f:
         f.write(prediction)
 
 
